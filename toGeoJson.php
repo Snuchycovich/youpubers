@@ -3,16 +3,20 @@
 $text = "";
 $file = $_POST["file"];
 $usr = $_POST['name'];
-
-if (is_array($usr)){
+$lat1 = 0;
+$long1 = 0;
+/*if (is_array($usr)){
   var_dump("array");
   $text = '{ "type": "MultiLineString",
       "coordinates": [';
-} else {
-  $text = '{ "type": "LineString",
-      "coordinates": [';
-}
-
+} else {*/
+  $text = '{ "type": "Feature",
+             "properties": {"name": "'.$usr.'"},
+             "geometry":{
+               "type": "LineString",
+               "coordinates": [';
+//}
+//$text = 'var data = [';
 $fichier = fopen("data/".$file, "r");
 
 // Lecture du fichier ligne par ligne
@@ -40,8 +44,9 @@ while (!feof($fichier)) {
         }*/
         //pas de tableau
         if ($name == $usr) {
-            
-            $text .= '['.$long.', '.$lat.'], ';
+            if ($lat1 != $lat && $long1 != $long) {
+                $text .= '['.$long.', '.$lat.'], ';
+            }
         }
     }
 }
@@ -49,7 +54,8 @@ while (!feof($fichier)) {
 fclose($fichier);
 
 $text = substr_replace($text, '', -2); // to get rid of extra comma
-$text .= "]}";
+//$text .= "]";
+$text .= ']}}';
 echo $text;
 
 

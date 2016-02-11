@@ -16,10 +16,11 @@ while (!feof($fichier)) {
         $ligne = preg_replace('!\s+!', ' ', $ligne);
         list($name, $date, $lat, $long) = split(" ", $ligne);
         //pas de tableau
+        
         if ($name == $usr) {
             if($lat1 != $lat && $long1 != $long){
-                $text = 'L.latLng('.$long.', '.$lat.'), ';
-                echo $text;
+                $text = 'L.LatLng('.$long.', '.$lat.'), ';
+                //echo $text;
                 //$text = array('latitude' => $lat, 'longitude' => $long);
                 //echo json_encode($text);
             }
