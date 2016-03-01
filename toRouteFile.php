@@ -1,6 +1,6 @@
 <?php
 
-$text = array();
+$text = "";
 $file = $_POST["file"];
 $usr = $_POST['name'];
 $lat1 = 0;
@@ -16,7 +16,7 @@ while (!feof($fichier)) {
         $ligne = preg_replace('!\s+!', ' ', $ligne);
         list($name, $date, $lat, $long) = split(" ", $ligne);
         //pas de tableau
-        
+
         if ($name == $usr) {
             if($lat1 != $lat && $long1 != $long){
                 $text = 'L.LatLng('.$long.', '.$lat.'), ';

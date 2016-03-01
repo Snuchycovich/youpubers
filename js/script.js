@@ -18,6 +18,10 @@ var routingControl1 = L.Routing.control({
     waypoints: [
         L.latLng(49.2268483,	-0.3732036),
         L.latLng(49.226677,	-0.3732356),
+        L.latLng(49.2266851, -0.3732473),
+        L.latLng(49.3133918, -0.3548033),
+        L.latLng(49.3133155, -0.3537108),
+        L.latLng(48.4534015, -2.0445218)
     ],
     routeWhileDragging: false,
 }).addTo(map);
@@ -72,7 +76,6 @@ map.on('draw:created', function (e) {
 /*============================================
 =============== FILE CHOICE ==================
 ============================================*/
-
 var file = "";
 var select = '<div class="form-group">'
               + '<label for="file">Sélectionnez un fichier:</label>'     ;
@@ -86,120 +89,158 @@ $.post('selectFile.php', function(data){
     $(".menu").append(select);
 }, 'JSON');
 
+/*============================================
+=============== GET DATA ==================
+============================================*/
+
+
 var fileName = "";
 $(".menu").on("change", "#file", function(){
   fileName = $("#file option:selected").attr("value");
   console.log(fileName);
   $('#menuYoupubers').remove();
 
-  /*============================================
-  ========= GENERATE YOUPUBERS MENU ============
-  ============================================*/
-  var html = "";
-  $.post('getMenuUsr.php', {file: fileName}, function(data){
-      html = '<div class="youpubers-menu">'
-      +'<div class="yprs">';
-      for(k in data){
-        html += '<div class="checkbox"><label><input type="checkbox" value="'+data[k]+'">'+data[k]+'</label></div>';
-      }
-      html += '</div>'
-      +'<div class="control-yprs"><a type="button" class="btn btn-default" id="afficher">Tout afficher</a> '
-      +'<a type="button" class="btn btn-default" id="nettoyer">Tout nettoyer</a></div>'
-      +'</div>';
+  $.post('toJsonArray.php', {file: fileName}, function(data){
 
-      clearMap();
-      /*if ($(".leaflet-control-container").children('.leaflet-top').children("div:nth-child(2)")) {
-        alert('ok');
-        $(".leaflet-control-container").children('.leaflet-top').children("div:nth-child(2)").css({"display":"none"});
-        //control.removeFrom(map);
-      }*/
-      /*if (map.hasLayer(drawControl)) {
-       map.removeLayer(drawControl);
-      }
-      else{
-         map.addLayer(drawControl);
-      } ;*/
+    /*========= GENERATE YOUPUBERS MENU ===========*/
 
-      $('.youpubers-menu').remove();
-      $(".menu").append(html);
+    var html = "";
+    html = '<div class="youpubers-menu">'
+    +'<div class="yprs">';
+    $.each(data, function(index, value){
+      html += '<div class="checkbox"><label><input type="checkbox" value="'+data[index].name+'">'+data[index].name+'</label></div>';
+    });
+    html += '</div>'
+    +'<div class="control-yprs"><a type="button" class="btn btn-default" id="afficher">Tout afficher</a> '
+    +'<a type="button" class="btn btn-default" id="nettoyer">Tout nettoyer</a></div>'
+    +'</div>';
 
-  },'JSON');
-});
-/*============================================
-================ GEOJSON ====================
-============================================*/
+    /*if ($(".leaflet-control-container").children('.leaflet-top').children("div:nth-child(2)")) {
+      alert('ok');
+      $(".leaflet-control-container").children('.leaflet-top').children("div:nth-child(2)").css({"display":"none"});
+      //control.removeFrom(map);
+    }*/
+    /*if (map.hasLayer(drawControl)) {
+     map.removeLayer(drawControl);
+    }
+    else{
+       map.addLayer(drawControl);
+    } ;*/
 
-var mapLayerGroups = []
+    clearMap();
+    $('.youpubers-menu').remove();
+    $(".menu").append(html);
 
-function onEachFeature(feature, featureLayer) {
-  var layerGroup = mapLayerGroups[feature.properties.name];
-  if(layerGroup === undefined) {
-    layerGroup = new L.layerGroup();
-    layerGroup.addTo(map);
-    mapLayerGroups[feature.properties.name] = layerGroup;
-  }
-  layerGroup.addLayer(featureLayer);
-}
+    /*================ GEOJSON ====================*/
+
+    var mapLayerGroups = []
+
+    function onEachFeature(feature, featureLayer) {
+      var layerGroup = mapLayerGroups[feature.properties.name];
+      if(layerGroup === undefined) {
+        layerGroup = new L.layerGroup();
+        layerGroup.addTo(map);
+        mapLayerGroups[feature.properties.name] = layerGroup;
+    }
+      layerGroup.addLayer(featureLayer);
+    }
 
 
-//var controlLayers = L.control.layers().addTo(map);
+    //var controlLayers = L.control.layers().addTo(map);
 
-var myStyle = {
-  "color": "#ff7800",
-  "weight": 5,
-  "opacity": 0.65
-};
+    var myStyle = {
+    "color": "#ff7800",
+    "weight": 5,
+    "opacity": 0.65
+    };
 
-/*============================================
-Récuperation de trace on click des youpubers
-===========================================*/
-var geoJson = "";
-var name = "";
+    /*============================================
+    Récuperation de trace on click des youpubers
+    ===========================================*/
+    var geoJson = "";
+    var name = "";
 
-var geoJsonLayer = L.geoJson(false, {
-  style: myStyle,
-  onEachFeature: onEachFeature
-}).addTo(map);
+    var geoJsonLayer = L.geoJson(false, {
+    style: myStyle,
+    onEachFeature: onEachFeature
+    }).addTo(map);
 
-  $(".menu").on('change', '.checkbox', function() {
+
+    $(".menu").on('change', '.checkbox', function() {
       name = $(this).text();
+      //console.log(name);
       $(this).children('label').children('input').toggleClass("checked");
       if($(this).children('label').children('input').hasClass("checked")){
+        
+          getGeoJson(name);
 
-        $.post('toGeoJson.php', {file: fileName, name: name}, function(data){
-          geoJsonLayer.addData(data);
-        },'JSON');
       } else {
-        console.log(name);
         hideLayer(name);
       }
-  });
+    });
 
+    /*=======*/
 
-$(".menu").on('click', '#nettoyer', function(){
-    $('.checkbox').children('label').children('input').removeClass("checked");
-    $('input[type="checkbox"]').prop('checked', false);
-    clearMap();
-})
+    $(".menu").on('click', '#nettoyer', function(){
+      $('.checkbox').children('label').children('input').removeClass("checked");
+      $('input[type="checkbox"]').prop('checked', false);
+      clearMap();
+    })
 
-$(".menu").on('click', '#afficher', function(){
-    $('.checkbox').children('label').children('input').addClass("checked");
-    $('input[type="checkbox"]').prop('checked', true);
-    //showTraces();
-})
+    $(".menu").on('click', '#afficher', function(){
+      $('.checkbox').children('label').children('input').addClass("checked");
+      $('input[type="checkbox"]').prop('checked', true);
+      $('.yprs .checkbox').each(function(index){
+          var name = $('.checkbox label').text();
+          console.log(name);
+          getGeoJson(name);
+      })
+    });
 
+    // Generate GeoJson file
+    var getGeoJson = function(name){
+        var geoJson = {"type": "LineString"};
+        var currentName = "";
+        $.each(data, function(index, value) {
+            if (data[index].name == name) {
+                currentName = data[index].name;
+                geoJson.properties = {"name": currentName}
+                geoJson.coordinates = [];
+                $(data[index].details).each(function(i){
+                  geoJson.coordinates.push([data[index].details[i].longitud, data[index].details[i].latitud])       
+                });
+            }
+            
+        });
+        console.log(geoJsonLayer);
+        console.log(geoJson);
+
+        geoJsonLayer.addData(geoJson);
+        console.log(mapLayerGroups)
+    }
+    
+    // Delete layer from map
+    var hideLayer = function(id) {
+        var lg = mapLayerGroups[id];
+        //console.log(lg._layers);
+        for (i in lg._layers){
+            //console.log(lg._layers[i]._leaflet_id)
+            map.removeLayer(lg._layers[i]);
+        }
+    }
+
+  }, 'JSON');
+});
 /*============================================
 =============== FUNCTIONS ====================
 ============================================*/
-
+//console.log(mapLayerGroups)
 var showLayer = function(id) {
     var lg = mapLayerGroups[id];
-    map.addLayer(lg);
+    map.addLayer(31);
 }
-var hideLayer = function(id) {
-    var lg = mapLayerGroups[id];
-    map.removeLayer(lg);
-}
+
+
 
 // clear traces
 var clearMap = function() {
@@ -217,7 +258,7 @@ var clearMap = function() {
 
 // waypoints function
 
-var addRoutes = function() {
+/*var addRoutes = function() {
 
   var routingControl = L.Routing.control({
       waypoints: [
@@ -227,4 +268,4 @@ var addRoutes = function() {
       routeWhileDragging: false,
   }).addTo(map);
   routingControl.hide();
-}
+}*/
