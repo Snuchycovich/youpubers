@@ -10,6 +10,7 @@ L.tileLayer(
     maxZoom: 18,
 }).addTo(map);
 
+/*var layerControl = L.control.layers(null, mapOverlays, {position:'topright'}).addTo(map);*/
 /*var routeControl = L.Routing.control({waypoints: []
 }).addTo(map);
 
@@ -24,8 +25,8 @@ var routingControl1 = L.Routing.control({
         L.latLng(48.4534015, -2.0445218)
     ],
     routeWhileDragging: false,
-}).addTo(map);
-routingControl1.hide();*/
+}).addTo(map);*/
+//routingControl1.hide();
 
 
 /*============================================
@@ -115,18 +116,6 @@ $(".menu").on("change", "#file", function(){
     +'<a type="button" class="btn btn-default" id="nettoyer">Tout nettoyer</a></div>'
     +'</div>';
 
-    /*if ($(".leaflet-control-container").children('.leaflet-top').children("div:nth-child(2)")) {
-      alert('ok');
-      $(".leaflet-control-container").children('.leaflet-top').children("div:nth-child(2)").css({"display":"none"});
-      //control.removeFrom(map);
-    }*/
-    /*if (map.hasLayer(drawControl)) {
-     map.removeLayer(drawControl);
-    }
-    else{
-       map.addLayer(drawControl);
-    } ;*/
-
     clearMap();
     $('.youpubers-menu').remove();
     $(".menu").append(html);
@@ -145,9 +134,6 @@ $(".menu").on("change", "#file", function(){
       layerGroup.addLayer(featureLayer);
     }
 
-
-    //var controlLayers = L.control.layers().addTo(map);
-
     var myStyle = {
     "color": "#ff7800",
     "weight": 5,
@@ -157,10 +143,11 @@ $(".menu").on("change", "#file", function(){
     /*============================================
     Récuperation de trace on click des youpubers
     ===========================================*/
-    var geoJson = "";
+    /*===== GEO Json =====*/
+    //var geoJson = "";
     var name = "";
 
-    var geoJsonLayer = L.geoJson(false, {
+    /*var geoJsonLayer = L.geoJson(false, {
     style: myStyle,
     onEachFeature: onEachFeature
     }).addTo(map);
@@ -172,33 +159,108 @@ $(".menu").on("change", "#file", function(){
       $(this).children('label').children('input').toggleClass("checked");
       if($(this).children('label').children('input').hasClass("checked")){
         
-          getGeoJson(name);
+          getGeoJson(data, name);
 
       } else {
         hideLayer(name);
       }
+    });*/
+
+    
+    /*===== Routing Points=====*/
+
+    /*var routingControl = L.Routing.control({
+          waypoints: [
+              L.latLng(49.2153508,  -0.5894552),
+              L.latLng(49.2761408,  -0.7016768)
+              ],
+          routeWhileDragging: false,
+          createMarker: function() { return null; }
+      }).addTo(map);
+      routingControl.hide();*/
+          
+    
+    $(".menu").on('change', '.checkbox', function() {
+      
+      //tableau pour les cordonnées 
+      var wayPoints = [];
+      // nom du checkox
+      name = $(this).text();
+      // layergroup pour les routes
+      var rlayer = null;
+      // initialisation des routes
+      var routingControl = L.Routing.control({
+          waypoints: [
+              ],
+          routeWhileDragging: false,
+          draggableWaypoints: false,
+          createMarker: function() { return null; },
+          geocodersClassName: name
+      }).addTo(map);
+      routingControl.hide();
+     
+      //console.log(routingControl);
+      $(this).children('label').children('input').toggleClass("checked");
+      if($(this).children('label').children('input').hasClass("checked")){
+          $.each(data, function(index, value) {
+              if (data[index].name == name) {
+                  $(data[index].details).each(function(i){
+                      var latLng = L.latLng(data[index].details[i].latitud, data[index].details[i].longitud);
+                      wayPoints.push(latLng);
+                  });
+              }
+                    
+          });
+          routingControl.setWaypoints(wayPoints);
+          //rlayer = L.layerGroup([routingControl]);
+          //console.log(rlayer);
+      } else {
+            console.log(leafletData.getMap());
+            //map.removeControl(routingControl);
+          for(i in map._layers) {
+              //console.log(map._layers[i]);
+              if (map._layers[i].options){
+                  if(map._layers[i].options.geocodersClassName == name){
+                      console.log('true');
+                      console.log(map._layers[i].options.geocodersClassName);
+                      //map.removeControl(routingControl);
+                  }
+              }
+              
+          }
+          //map.removeLayer(routingControl);
+          //rlayer = null;
+      }
     });
 
-    /*=======*/
 
+    /*=======*/
+    // action button nettoyer
     $(".menu").on('click', '#nettoyer', function(){
       $('.checkbox').children('label').children('input').removeClass("checked");
       $('input[type="checkbox"]').prop('checked', false);
       clearMap();
     })
 
+    // action button afficher tout
     $(".menu").on('click', '#afficher', function(){
+      var names = [];
       $('.checkbox').children('label').children('input').addClass("checked");
       $('input[type="checkbox"]').prop('checked', true);
-      $('.yprs .checkbox').each(function(index){
-          var name = $('.checkbox label').text();
-          console.log(name);
-          getGeoJson(name);
-      })
+      $('.yprs .checkbox').each(function(index, element){
+            names.push($(element).text());
+          });
+          for (i in names){
+            console.log(names[i])
+            getGeoJson(data, names[i]);
+          }
+          
     });
-
+    
+    /*========= FUNCTIONS ==========*/
+    
     // Generate GeoJson file
-    var getGeoJson = function(name){
+    var getGeoJson = function(data, name){
         var geoJson = {"type": "LineString"};
         var currentName = "";
         $.each(data, function(index, value) {
@@ -218,6 +280,18 @@ $(".menu").on("change", "#file", function(){
         geoJsonLayer.addData(geoJson);
         console.log(mapLayerGroups)
     }
+
+    // Waypoints function
+    var addRoutes = function() {
+      var routingControl = L.Routing.control({
+          waypoints: [
+              L.latLng(49.2153508,  -0.5894552),
+              L.latLng(49.2761408,  -0.7016768)
+          ],
+          routeWhileDragging: false,
+      }).addTo(map);
+      routingControl.hide();
+    }
     
     // Delete layer from map
     var hideLayer = function(id) {
@@ -234,13 +308,6 @@ $(".menu").on("change", "#file", function(){
 /*============================================
 =============== FUNCTIONS ====================
 ============================================*/
-//console.log(mapLayerGroups)
-var showLayer = function(id) {
-    var lg = mapLayerGroups[id];
-    map.addLayer(31);
-}
-
-
 
 // clear traces
 var clearMap = function() {
@@ -255,17 +322,3 @@ var clearMap = function() {
         }
     }
 }
-
-// waypoints function
-
-/*var addRoutes = function() {
-
-  var routingControl = L.Routing.control({
-      waypoints: [
-          L.latLng(49.2153508,	-0.5894552),
-          L.latLng(49.2761408,	-0.7016768)
-      ],
-      routeWhileDragging: false,
-  }).addTo(map);
-  routingControl.hide();
-}*/
