@@ -2,9 +2,11 @@
 
 $array = array();
 // recuperation du nom du fichier
-$file = $_POST["file"];
+$postdata = file_get_contents("php://input");
+$request = json_decode($postdata);
+$file = $request->file;
 //$file = "20160116";
-
+//echo $file;
 $fichier = fopen("data/".$file, "r");
 
 // Lecture du fichier ligne par ligne
@@ -20,19 +22,19 @@ while (!feof($fichier)) {
         $arrayName = array('name' => $name, 'details' => array());
         $currentName = $name;
 
-        if(empty($array)) {
+        if (empty($array)) {
             array_push($array, $arrayName);
             array_push($array[0]['details'], $arrayDetails);
         } else {
-            if (!in_array_r($currentName, $array)){
+            if (!inArrayR($currentName, $array)) {
                 array_push($array, $arrayName);
                 $size = sizeof($array) -1;
                 array_push($array[$size]['details'], $arrayDetails);
             } else {
                 for ($i = 0; $i< sizeof($array); $i++) {
-                  if ($currentName == $array[$i]['name']) {
-                    array_push($array[$i]['details'], $arrayDetails);
-                  }
+                    if ($currentName == $array[$i]['name']) {
+                        array_push($array[$i]['details'], $arrayDetails);
+                    }
                 }
             }
         }
@@ -72,9 +74,10 @@ function objectExists($array, $name) {
     }
 }*/
 //fonction pour savoir si pair $cle $valeur existe dans un tableau
-function in_array_r($var, $array, $strict = false) {
+function inArrayR($var, $array, $strict = false)
+{
     foreach ($array as $item) {
-        if (($strict ? $item === $var : $item == $var) || (is_array($item) && in_array_r($var, $item, $strict))) {
+        if (($strict ? $item === $var : $item == $var) || (is_array($item) && inArrayR($var, $item, $strict))) {
             return true;
         }
     }

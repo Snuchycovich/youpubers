@@ -1,7 +1,7 @@
 /*====================
 ====== GLOBALES ======
 ====================*/
-body, html, #map {
+body, html, #map, #page {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -13,14 +13,15 @@ body, html, #map {
   top: 1em;
   right: 1em;
   padding: 1em;
+  width: 245px;
   background-color: white; }
 
-.yprs {
-  height: 475px;
+.youpubers-menu {
+  height: 460px;
   overflow-y: scroll;
   overflow-x: hidden; }
 
-.control-yprs {
+.menu-control {
   margin: 1em 0; }
 
 /*== routing-Machin ==*/
