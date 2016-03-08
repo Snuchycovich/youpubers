@@ -1,4 +1,22 @@
 /*====================
+======= MIXINS =======
+===================*/
+
+@mixin centerer {
+	position:absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%,-50%);
+}
+
+@mixin rounded {
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-o-border-radius: 10px;
+}
+
+/*====================
 ====== GLOBALES ======
 ====================*/
 body, html, #map, #page {
@@ -16,6 +34,7 @@ body, html, #map, #page {
 	padding:1em;
 	width:245px;
 	background-color: white;
+	@include rounded;
 }
 .youpubers-menu{
   height:460px;
@@ -29,4 +48,14 @@ body, html, #map, #page {
 /*== routing-Machin ==*/
 .leaflet-control-container .leaflet-routing-container-hide {
     display: none;
+}
+
+/**/
+.loading-map {
+	@include centerer;
+	@include rounded;	
+	padding:0.5em;
+	color: white;
+	background-color: #333;
+	opacity:0.7;
 }

@@ -6,7 +6,10 @@
 		<link rel="stylesheet" href="js/leaflet/leaflet.css"	/>
 		<link rel="stylesheet" href="js/leaflet.draw/leaflet.draw.css"	/>
 		<link rel="stylesheet" href="js/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    	<link rel="stylesheet" href="css/style.css">
+    	<script src="js/angular.min.js"></script>
+		<script src="js/app.js"></script>
 	</head>
 <body>
 	<div ng-app="mapApp" ng-controller="mapController" ng-init="initMap()" id="page">
@@ -16,10 +19,14 @@
 				<div class="form-group">
 					<label for="file">Sélectionnez un fichier:</label>
 					<select class="form-control" id="files">
-						<option></option>
+						<option>Fichier par date</option>
 						<option ng-repeat="file in filesByDate" ng-click="getData($event)" data="{{ file }}">{{ file }}</option>
 					</select>
 				</div>
+				<!--<p class="text-center" ng-show="onloadData">
+					<i class="fa fa fa-cog fa-spin fa-4x"></i> <br>
+					Chargement...
+				</p>-->
 				<div class="stats" ng-show="isNotEmpty(ypByCampagne)">
 					<p>{{ nbYP }} vehicules, {{ nbSelectedYP }} affichés.</p>
 				</div>
@@ -38,6 +45,10 @@
 					<input type="button" class="btn btn-default" ng-click="cleanAll()" value="Tout nettoyer">
 				</div>
 			</div>
+			<p class="loading-map text-center" ng-show="onloadTrace">
+					<i class="fa fa fa-cog fa-spin fa-4x"></i> <br>
+					Chargement...
+				</p>
 		</div>
 	</div>
 	
@@ -48,8 +59,7 @@
 	<script	src="js/leaflet/leaflet.js"></script>
 	<script	src="js/leaflet.draw/leaflet.draw.js"></script>
 	<script src="js/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-	<script src="js/angular.min.js"></script>
-	<script src="js/app.js"></script>
+	
 	<!--<script src="js/script.js"></script>-->
 </body>
 </html>
