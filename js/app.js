@@ -184,19 +184,37 @@ var mapApp = angular.module('mapApp',[]).controller('mapController', function($s
 	
 	// Check all checkboxes and show all traces
 	$scope.showAll = function() {
+		$scope.cleanAll();
 		$scope.nbSelectedYP = $scope.ypByCampagne.length;
-		$('.cb-yp').addClass("checked");
-        $('.youpuber input[type="checkbox"]').prop('checked', true);
+        $('.youpuber input[type="checkbox"]').prop('checked', true)
+        
         for(i in $scope.ypByCampagne){
-        	console.log($scope.ypByCampagne[i]);
+        	document.querySelector('#c-'+ $scope.ypByCampagne[i]).setAttribute("checked", "checked");
+			$scope.youpubers.push($scope.ypByCampagne[i]);
+        	$scope.youpubers[$scope.ypByCampagne[i]] = L.Routing.control({
+		        waypoints: [
+		            ],
+		        routeWhileDragging: false,
+		        draggableWaypoints: false,
+		        createMarker: function() { return null; },
+		        geocodersClassName: $scope.ypByCampagne[i]
+	        })
 			$scope.getAllTraces($scope.file, $scope.ypByCampagne[i]);
+			$scope.traces.addLayer($scope.youpubers[$scope.ypByCampagne[i]]);
 		}
+		
+
+
 	}
 	// Clean traces form one campagne
 	$scope.cleanAll = function(){
 		$scope.nbSelectedYP = 0;
-		$('.youpuber input[type="checkbox"]').prop('checked', false);
-		$scope.cleanMap();
+		$('.youpuber input[type="checkbox"]').prop('checked', false)
+		for(i in $scope.ypByCampagne){
+			document.querySelector('#c-'+ $scope.ypByCampagne[i]).setAttribute("checked", "");
+			$scope.traces.removeLayer($scope.youpubers[$scope.ypByCampagne[i]]);
+
+		}
 	}
 
 
