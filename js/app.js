@@ -43,6 +43,7 @@ var mapApp = angular.module('mapApp',[]).controller('mapController', function($s
 	
 	//Method getData to build the youpubers menu  
 	$scope.getData = function(obj){
+		$scope.initDraw();
 		$scope.onloadData = true;
 		$scope.onloadTrace = true;
 		$scope.cleanMap();
@@ -56,7 +57,7 @@ var mapApp = angular.module('mapApp',[]).controller('mapController', function($s
 		$http.post('toJsonArray.php', data).then(function succes(response){
 			
 			//Tableau des waypoints
-			var wayPoints = [];
+			//var wayPoints = [];
 
 			//On rempli le tableau ypByCampagne pour afficher le menu
 			for(i in response.data){
@@ -73,7 +74,12 @@ var mapApp = angular.module('mapApp',[]).controller('mapController', function($s
 			            ],
 			        routeWhileDragging: false,
 			        draggableWaypoints: false,
-			        createMarker: function() { return null; },
+			        createMarker: function(i, wp, n) {
+			        	if (i == (n-1) || i == 0) {
+			        		return L.marker(wp.latLng);
+			        	}
+						
+					},
 			        geocodersClassName: youpuber
 		        });
 		        //$scope.youpubers[youpuber].hide();
@@ -93,6 +99,7 @@ var mapApp = angular.module('mapApp',[]).controller('mapController', function($s
 
 			// On a fini le chargement (icone chargement)
 			$scope.onloadData = false;
+			console.log($scope.youpubers['pika']);
 		}, function error(response){
 			console.log('Error pendant le chargement des donnes par fichier...');
 		});
@@ -200,8 +207,22 @@ var mapApp = angular.module('mapApp',[]).controller('mapController', function($s
 		        geocodersClassName: $scope.ypByCampagne[i]
 	        })
 			$scope.getAllTraces($scope.file, $scope.ypByCampagne[i]);
+			
 			$scope.traces.addLayer($scope.youpubers[$scope.ypByCampagne[i]]);
 		}
+
+		/*$scope.createRoutes = function(){
+			$scope.youpubers.push($scope.ypByCampagne[i]);
+        	$scope.youpubers[$scope.ypByCampagne[i]] = L.Routing.control({
+		        waypoints: [
+		            ],
+		        routeWhileDragging: false,
+		        draggableWaypoints: false,
+		        createMarker: function() { return null; },
+		        geocodersClassName: $scope.ypByCampagne[i]
+	        })
+			$scope.getAllTraces($scope.file, $scope.ypByCampagne[i]);
+		}*/
 		
 
 
@@ -241,19 +262,64 @@ var mapApp = angular.module('mapApp',[]).controller('mapController', function($s
 		}
 	}
 
+	/*===== DRAW AREAS=====*/
+	
+	$scope.initDraw = function(){ 
+		// Initialise the FeatureGroup to store editable layers
+		var drawnItems = new L.FeatureGroup();
+		  map.addLayer(drawnItems);
 
-/*================
-=== DIRECTIVES ===
-================*/
+		// Initialise the draw control and pass it the FeatureGroup of editable layers
+		var drawControl = new L.Control.Draw({
+		  	draw: {
+			    polyline: false,
+			    rectangle: false,
+			    circle: false,
+			    marker:false
+		  	},
+		  	edit: {
+			      featureGroup: drawnItems,
+			      edit: false
+		  }
+		});
+		drawControl.addTo(map)
 
-	/*mapApp.directive('toggleClass', function() {
-	    return {
-	        restrict: 'A',
-	        link: function(scope, element, attrs) {
-	            element.bind('click', function() {
-	                element.toggleClass(attrs.toggleClass);
-	            });
-	        }
-	    };
-	});*/		
+		// create draw
+		map.on('draw:created', function (e) {
+	
+		  	var type = e.layerType,
+		      	layer = e.layer;
+
+		  	/*if (type === 'rectangle') {
+			      //var area = L.GeometryUtil.geodesicArea(layer.getLatLngs());
+			      var rectangle = layer.getLatLngs();
+			      alert(rectangle);
+			      alert(layer.getBounds().toBBoxString());
+			      //$.each(rectangle, )
+		  	}
+			if (type === 'circle') {
+			  alert(layer.getBounds().toBBoxString());
+			}*/
+			if (type === 'polygon') {
+				$scope.cleanAll();
+    			
+    			//area en m²
+    			var seeArea = L.GeometryUtil.geodesicArea(layer.getLatLngs());
+    			console.log(seeArea);
+
+				console.log(layer.getBounds().toBBoxString());
+				var boundes = layer.getBounds().toBBoxString();
+				var res = boundes.split(",");
+				console.log(res);
+				var lng1 = res[0];
+				var lat1 = res[1];
+				var lng2 = res[2];
+				var lat2 = res[3];
+				console.log(lat1+ " "+ lng2);
+			}
+			// Do whatever else you need to. (save to db, add to map etc)
+			drawnItems.addLayer(layer);
+		});
+	}
+		
 });
